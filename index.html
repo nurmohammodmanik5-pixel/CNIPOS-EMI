@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AwajDigital Control Panel</title>
+    <title>AwajDigital Full Control Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -14,14 +14,17 @@
 <body class="bg-gray-100 flex h-screen font-sans">
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-gray-900 text-white flex flex-col">
+    <aside class="w-64 bg-gray-900 text-white flex flex-col h-full overflow-y-auto">
         <div class="p-6 text-2xl font-bold border-b border-gray-800">AwajDigital</div>
-        <nav class="flex-1 p-4 space-y-2">
-            <button onclick="showSection('dashboard')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-home mr-2"></i> Dashboard</button>
-            <button onclick="showSection('otp')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-key mr-2"></i> Send OTP</button>
-            <button onclick="showSection('bulk')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-bullhorn mr-2"></i> Bulk Broadcast</button>
-            <button onclick="showSection('upload')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-microphone mr-2"></i> Upload Voice</button>
-            <button onclick="showSection('settings')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-cog mr-2"></i> Settings</button>
+        <nav class="flex-1 p-4 space-y-1 text-sm">
+            <button onclick="showSection('dashboard')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-home mr-2 w-5"></i> Dashboard</button>
+            <button onclick="showSection('otp')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-key mr-2 w-5"></i> Send OTP</button>
+            <button onclick="showSection('bulk')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-bullhorn mr-2 w-5"></i> Bulk Broadcast</button>
+            <button onclick="showSection('direct-tts')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-comment-dots mr-2 w-5"></i> Direct TTS (AI)</button>
+            <button onclick="showSection('surveys')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-poll mr-2 w-5"></i> Create Survey</button>
+            <button onclick="showSection('campaigns')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-headset mr-2 w-5"></i> CC Campaigns</button>
+            <button onclick="showSection('upload')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-microphone mr-2 w-5"></i> Upload Voice</button>
+            <button onclick="showSection('settings')" class="w-full text-left p-3 rounded hover:bg-gray-800 mt-4 border-t border-gray-700 pt-4"><i class="fas fa-cog mr-2 w-5"></i> Settings</button>
         </nav>
     </aside>
 
@@ -34,10 +37,12 @@
         <!-- Dashboard -->
         <section id="dashboard" class="hidden-section block">
             <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
-            <div class="bg-white p-6 rounded-lg shadow w-64">
-                <h3 class="text-gray-500 mb-2">Current Balance (BDT)</h3>
-                <div id="balance-display" class="text-4xl font-bold text-blue-600">--</div>
-                <button onclick="checkBalance()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Refresh Balance</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow border-t-4 border-blue-500">
+                    <h3 class="text-gray-500 mb-2 font-semibold">Current Balance (BDT)</h3>
+                    <div id="balance-display" class="text-4xl font-bold text-gray-800">--</div>
+                    <button onclick="checkBalance()" class="mt-4 text-sm bg-gray-100 text-gray-700 px-4 py-2 rounded hover:bg-gray-200">Refresh Balance</button>
+                </div>
             </div>
         </section>
 
@@ -84,7 +89,90 @@
                         <label class="block font-medium mb-1">Phone Numbers (Comma separated)</label>
                         <textarea id="bulk-phones" class="w-full border p-2 rounded h-32" placeholder="019XXXXXXX, 018XXXXXXX" required></textarea>
                     </div>
-                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Send Broadcast</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Send Bulk Broadcast</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Direct TTS (AI Text to Speech) -->
+        <section id="direct-tts" class="hidden-section">
+            <h1 class="text-3xl font-bold mb-6">Direct TTS Broadcast (AI)</h1>
+            <div class="bg-white p-6 rounded-lg shadow max-w-lg border-t-4 border-indigo-500">
+                <p class="text-sm text-gray-500 mb-4">Convert Bangla/English text directly to voice calls.</p>
+                <form onsubmit="sendTTS(event)" class="space-y-4">
+                    <div>
+                        <label class="block font-medium mb-1">Sender ID</label>
+                        <select id="tts-sender" class="w-full border p-2 rounded dynamic-senders" required></select>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Phone Numbers (Comma separated)</label>
+                        <input type="text" id="tts-phones" class="w-full border p-2 rounded" placeholder="019XXXXXXX, 018XXXXXXX" required>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Message Text</label>
+                        <textarea id="tts-text" class="w-full border p-2 rounded h-24" placeholder="আসসালামু আলাইকুম। আপনার ওটিপি হলো ১২৩৪..." required></textarea>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label class="block font-medium mb-1">Voice Type</label>
+                            <select id="tts-voice-type" class="w-full border p-2 rounded">
+                                <option value="female">Female</option>
+                                <option value="male">Male</option>
+                            </select>
+                        </div>
+                        <div class="w-1/2">
+                            <label class="block font-medium mb-1">Language</label>
+                            <select id="tts-lang" class="w-full border p-2 rounded">
+                                <option value="bn-BD">Bengali (bn-BD)</option>
+                                <option value="en-US">English (en-US)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">Send TTS Broadcast</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Create Survey -->
+        <section id="surveys" class="hidden-section">
+            <h1 class="text-3xl font-bold mb-6">Create Voice Survey</h1>
+            <div class="bg-white p-6 rounded-lg shadow max-w-lg">
+                <form onsubmit="createSurvey(event)" class="space-y-4">
+                    <div>
+                        <label class="block font-medium mb-1">Sender ID</label>
+                        <select id="survey-sender" class="w-full border p-2 rounded dynamic-senders" required></select>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Template Name</label>
+                        <input type="text" id="survey-template" class="w-full border p-2 rounded" placeholder="customer_satisfaction_survey" required>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Phone Numbers (Comma separated)</label>
+                        <textarea id="survey-phones" class="w-full border p-2 rounded h-24" placeholder="019XXXXXXX, 018XXXXXXX" required></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600">Start Survey</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- CC Campaigns -->
+        <section id="campaigns" class="hidden-section">
+            <h1 class="text-3xl font-bold mb-6">Call Center Campaigns</h1>
+            <div class="bg-white p-6 rounded-lg shadow max-w-lg border-t-4 border-red-500">
+                <form onsubmit="createCampaign(event)" class="space-y-4">
+                    <div>
+                        <label class="block font-medium mb-1">Campaign Name</label>
+                        <input type="text" id="camp-name" class="w-full border p-2 rounded" placeholder="October Renewals" required>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Group ID (Integer)</label>
+                        <input type="number" id="camp-group" class="w-full border p-2 rounded" placeholder="7" required>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Phone Numbers</label>
+                        <textarea id="camp-phones" class="w-full border p-2 rounded h-24" placeholder="019XXXXXXX, 018XXXXXXX" required></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700">Create Campaign</button>
                 </form>
             </div>
         </section>
@@ -99,31 +187,32 @@
                         <input type="text" id="voice-name" class="w-full border p-2 rounded" required>
                     </div>
                     <div>
-                        <label class="block font-medium mb-1">Audio File (MP3/WAV)</label>
+                        <label class="block font-medium mb-1">Audio File (MP3/WAV/M4A)</label>
                         <input type="file" id="voice-file" class="w-full border p-2 rounded" accept="audio/*" required>
                     </div>
-                    <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">Upload</button>
+                    <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">Upload File</button>
                 </form>
             </div>
         </section>
 
         <!-- Settings -->
         <section id="settings" class="hidden-section">
-            <h1 class="text-3xl font-bold mb-6">Settings</h1>
+            <h1 class="text-3xl font-bold mb-6">System Settings</h1>
             <div class="bg-white p-6 rounded-lg shadow max-w-lg">
                 <div class="space-y-4">
                     <div>
-                        <label class="block font-medium mb-1">API Token</label>
-                        <input type="password" id="api-token" class="w-full border p-2 rounded" placeholder="Paste your API token here">
+                        <label class="block font-medium mb-1">AwajDigital API Token</label>
+                        <input type="password" id="api-token" class="w-full border p-2 rounded bg-gray-50" placeholder="Paste your API token here">
+                        <p class="text-xs text-gray-500 mt-1">Stored securely in your browser's LocalStorage.</p>
                     </div>
-                    <button onclick="saveToken()" class="w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900">Save Token</button>
+                    <button onclick="saveToken()" class="w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900">Save Token & Reload Data</button>
                 </div>
             </div>
         </section>
     </main>
 
     <script>
-        // Vercel Rewrite URL
+        // Vercel Proxy URL 
         const BASE_URL = '/awaj-api';
 
         // Load Token
@@ -133,42 +222,44 @@
             initData();
         } else {
             showSection('settings');
-            showToast('Please set your API token first', 'error');
+            showToast('Please set your API token in settings', 'error');
         }
 
         function saveToken() {
-            API_TOKEN = document.getElementById('api-token').value;
+            API_TOKEN = document.getElementById('api-token').value.trim();
             localStorage.setItem('awaj_token', API_TOKEN);
             showToast('Token saved successfully!', 'success');
             initData();
         }
 
-        // Navigation
         function showSection(id) {
             document.querySelectorAll('.hidden-section').forEach(sec => sec.style.display = 'none');
             document.getElementById(id).style.display = 'block';
             if(id === 'dashboard') checkBalance();
         }
 
-        // Init App Data (Fetch Voices and Senders automatically)
         async function initData() {
             if(!API_TOKEN) return;
-            checkBalance();
+            showSection('dashboard');
+            await checkBalance();
             await fetchVoices();
             await fetchSenders();
         }
 
-        // Generate 20-char unique ID automatically
         function generateReqId() {
-            return Math.random().toString(36).substring(2, 12) + Math.random().toString(36).substring(2, 12);
+            // Generates a 24 character random ID
+            return 'req_' + Math.random().toString(36).substring(2, 12) + Math.random().toString(36).substring(2, 14);
         }
 
-        // Custom Toast Notification
+        function parsePhones(str) {
+            return str.split(',').map(num => num.trim()).filter(num => num !== '');
+        }
+
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
-            toast.className = `${bgColor} text-white px-6 py-3 rounded shadow-lg opacity-0 transform translate-y-4 transition-all duration-300`;
+            const bgColor = type === 'success' ? 'bg-green-600' : 'bg-red-600';
+            toast.className = `${bgColor} text-white px-6 py-3 rounded shadow-lg opacity-0 transform translate-y-4 transition-all duration-300 z-50`;
             toast.innerText = message;
             container.appendChild(toast);
             
@@ -176,10 +267,9 @@
             setTimeout(() => {
                 toast.classList.add('opacity-0', '-translate-y-4');
                 setTimeout(() => toast.remove(), 300);
-            }, 4000);
+            }, 5000);
         }
 
-        // Universal Fetch Wrapper
         async function apiCall(endpoint, method = 'GET', body = null, isFormData = false) {
             const headers = { 'Authorization': `Bearer ${API_TOKEN}` };
             if (!isFormData) {
@@ -191,48 +281,62 @@
 
             try {
                 const res = await fetch(`${BASE_URL}${endpoint}`, options);
-                const data = await res.json().catch(() => ({}));
+                let data = {};
+                try { data = await res.json(); } catch(e) {} // Handle empty responses
                 
                 if (!res.ok) {
-                    const errMsg = data.message || data.error || 'Request failed';
+                    const errMsg = data.message || data.error || (data.errors ? JSON.stringify(data.errors) : `HTTP Error ${res.status}`);
                     throw new Error(errMsg);
                 }
                 return data;
             } catch (err) {
+                console.error("API Error:", err);
                 showToast(err.message, 'error');
                 throw err;
             }
         }
 
-        // 1. Check Balance
+        // --- Endpoints ---
+
         async function checkBalance() {
             try {
                 const data = await apiCall('/balance');
-                document.getElementById('balance-display').innerText = data.balance !== undefined ? data.balance : '0.00';
+                // Extract balance based on possible JSON structures
+                const bal = data.balance !== undefined ? data.balance : (data.data?.balance || '0.00');
+                document.getElementById('balance-display').innerText = '৳ ' + parseFloat(bal).toFixed(2);
             } catch (err) { document.getElementById('balance-display').innerText = 'Error'; }
         }
 
-        // 2. Fetch Voices & Populate Dropdowns
         async function fetchVoices() {
             try {
-                const voices = await apiCall('/voices');
-                const options = '<option value="">Select a Voice</option>' + 
-                    voices.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
+                const res = await apiCall('/voices');
+                // Handle different JSON wrappers (array vs object)
+                const voiceArray = Array.isArray(res) ? res : (res.data || res.voices || []);
+                
+                let options = '<option value="">Select an Approved Voice</option>';
+                voiceArray.forEach(v => {
+                    const name = typeof v === 'string' ? v : v.name;
+                    options += `<option value="${name}">${name}</option>`;
+                });
                 document.querySelectorAll('.dynamic-voices').forEach(select => select.innerHTML = options);
-            } catch (err) {}
+            } catch (err) { console.error("Failed to fetch voices"); }
         }
 
-        // 3. Fetch Senders & Populate Dropdowns
         async function fetchSenders() {
             try {
-                const senders = await apiCall('/senders');
-                const options = '<option value="">Select a Sender</option>' + 
-                    senders.map(s => `<option value="${s.number || s}">${s.number || s}</option>`).join('');
+                const res = await apiCall('/senders');
+                // Handle different JSON wrappers
+                const senderArray = Array.isArray(res) ? res : (res.data || res.senders || []);
+                
+                let options = '<option value="">Select a Sender ID</option>';
+                senderArray.forEach(s => {
+                    const number = typeof s === 'string' ? s : s.number;
+                    options += `<option value="${number}">${number}</option>`;
+                });
                 document.querySelectorAll('.dynamic-senders').forEach(select => select.innerHTML = options);
-            } catch (err) {}
+            } catch (err) { console.error("Failed to fetch senders"); }
         }
 
-        // 4. Send OTP
         async function sendOTP(e) {
             e.preventDefault();
             const payload = {
@@ -249,26 +353,68 @@
             } catch (err) {}
         }
 
-        // 5. Send Bulk Broadcast
         async function sendBulk(e) {
             e.preventDefault();
-            const phoneStr = document.getElementById('bulk-phones').value;
-            const phoneArr = phoneStr.split(',').map(num => num.trim()).filter(num => num);
-            
             const payload = {
                 request_id: generateReqId(),
                 sender: document.getElementById('bulk-sender').value,
                 voice: document.getElementById('bulk-voice').value,
-                phone_numbers: phoneArr
+                phone_numbers: parsePhones(document.getElementById('bulk-phones').value)
             };
             try {
                 await apiCall('/broadcasts', 'POST', payload);
-                showToast(`Broadcast sent to ${phoneArr.length} numbers!`);
+                showToast('Bulk Broadcast initialized!');
                 e.target.reset();
             } catch (err) {}
         }
 
-        // 6. Upload Voice
+        async function sendTTS(e) {
+            e.preventDefault();
+            const payload = {
+                request_id: generateReqId(),
+                sender: document.getElementById('tts-sender').value,
+                phone_numbers: parsePhones(document.getElementById('tts-phones').value),
+                texts: [document.getElementById('tts-text').value],
+                voice: document.getElementById('tts-voice-type').value,
+                language_code: document.getElementById('tts-lang').value
+            };
+            try {
+                await apiCall('/broadcasts/direct-tts', 'POST', payload);
+                showToast('TTS Broadcast request sent successfully!');
+                e.target.reset();
+            } catch (err) {}
+        }
+
+        async function createSurvey(e) {
+            e.preventDefault();
+            const payload = {
+                request_id: generateReqId(),
+                template_name: document.getElementById('survey-template').value,
+                sender: document.getElementById('survey-sender').value,
+                phone_numbers: parsePhones(document.getElementById('survey-phones').value)
+            };
+            try {
+                await apiCall('/surveys', 'POST', payload);
+                showToast('Survey campaign created successfully!');
+                e.target.reset();
+            } catch (err) {}
+        }
+
+        async function createCampaign(e) {
+            e.preventDefault();
+            const payload = {
+                request_id: generateReqId(),
+                name: document.getElementById('camp-name').value,
+                group_id: parseInt(document.getElementById('camp-group').value),
+                phone_numbers: parsePhones(document.getElementById('camp-phones').value)
+            };
+            try {
+                await apiCall('/cc/campaigns', 'POST', payload);
+                showToast('Call Center Campaign created successfully!');
+                e.target.reset();
+            } catch (err) {}
+        }
+
         async function uploadVoice(e) {
             e.preventDefault();
             const formData = new FormData();
@@ -277,14 +423,11 @@
 
             try {
                 await apiCall('/voices/upload', 'POST', formData, true);
-                showToast('Voice uploaded! Waiting for approval.');
+                showToast('Voice uploaded successfully! Waiting for approval.');
                 e.target.reset();
                 setTimeout(fetchVoices, 2000);
             } catch (err) {}
         }
-
-        // Start App
-        if(API_TOKEN) showSection('dashboard');
     </script>
 </body>
 </html>
