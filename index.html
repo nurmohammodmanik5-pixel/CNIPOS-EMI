@@ -3,585 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AwajDigital Full API Panel</title>
+    <title>AwajDigital Control Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        
-        /* Smooth transitions */
-        .page-section { display: none; opacity: 0; transition: opacity 0.3s ease; }
-        .page-section.active { display: block; opacity: 1; animation: fadeIn 0.4s; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Custom Scrollbar for Pre blocks */
-        pre::-webkit-scrollbar { height: 8px; width: 8px; }
-        pre::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-        pre::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-
-        .toast { transition: all 0.3s ease-out; }
+        .toast { transition: opacity 0.3s ease, transform 0.3s ease; }
+        .hidden-section { display: none; }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden text-slate-800">
+<body class="bg-gray-100 flex h-screen font-sans">
 
-    <!-- Mobile Header -->
-    <div class="md:hidden fixed top-0 w-full h-16 bg-slate-900 text-white flex items-center justify-between px-4 z-50">
-        <div class="flex items-center">
-            <i class="fas fa-wave-square text-blue-500 text-xl mr-2"></i>
-            <h1 class="font-bold text-lg">Awaj Panel</h1>
-        </div>
-        <button onclick="toggleMobileMenu()" class="text-white text-2xl focus:outline-none">
-            <i class="fas fa-bars"></i>
-        </button>
-    </div>
-
-    <!-- Sidebar Navigation -->
-    <aside id="sidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col h-full absolute md:relative z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
-        <div class="h-16 flex items-center px-6 bg-slate-950 border-b border-slate-800">
-            <i class="fas fa-wave-square text-blue-500 text-2xl mr-3"></i>
-            <h1 class="text-xl font-bold text-white tracking-wide">AwajDigital</h1>
-        </div>
-        <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-            <button onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors active-nav">
-                <i class="fas fa-home w-6"></i> <span>Dashboard</span>
-            </button>
-            <button onclick="switchTab('voices')" class="nav-btn w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors hover:bg-slate-800">
-                <i class="fas fa-microphone w-6"></i> <span>Voices</span>
-            </button>
-            <button onclick="switchTab('broadcasts')" class="nav-btn w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors hover:bg-slate-800">
-                <i class="fas fa-broadcast-tower w-6"></i> <span>Broadcasts</span>
-            </button>
-            <button onclick="switchTab('surveys')" class="nav-btn w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors hover:bg-slate-800">
-                <i class="fas fa-poll-h w-6"></i> <span>Surveys</span>
-            </button>
-            <button onclick="switchTab('calls')" class="nav-btn w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors hover:bg-slate-800">
-                <i class="fas fa-headset w-6"></i> <span>Calls & Agents</span>
-            </button>
-            <button onclick="switchTab('payments')" class="nav-btn w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors hover:bg-slate-800">
-                <i class="fas fa-credit-card w-6"></i> <span>Payments</span>
-            </button>
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gray-900 text-white flex flex-col">
+        <div class="p-6 text-2xl font-bold border-b border-gray-800">AwajDigital</div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="showSection('dashboard')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-home mr-2"></i> Dashboard</button>
+            <button onclick="showSection('otp')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-key mr-2"></i> Send OTP</button>
+            <button onclick="showSection('bulk')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-bullhorn mr-2"></i> Bulk Broadcast</button>
+            <button onclick="showSection('upload')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-microphone mr-2"></i> Upload Voice</button>
+            <button onclick="showSection('settings')" class="w-full text-left p-3 rounded hover:bg-gray-800"><i class="fas fa-cog mr-2"></i> Settings</button>
         </nav>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col h-full overflow-y-auto mt-16 md:mt-0 bg-slate-50 relative w-full">
-        <!-- Header -->
-        <header class="h-16 bg-white shadow-sm flex items-center px-8 hidden md:flex sticky top-0 z-30">
-            <h2 id="page-title" class="text-xl font-semibold text-slate-800">Dashboard</h2>
-        </header>
+    <!-- Main Content -->
+    <main class="flex-1 p-8 overflow-y-auto relative">
+        
+        <!-- Toast Container -->
+        <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col space-y-2"></div>
 
-        <div class="p-4 md:p-8 max-w-7xl mx-auto w-full pb-20">
-            
-            <!-- ================= DASHBOARD ================= -->
-            <section id="tab-dashboard" class="page-section active space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Balance Card -->
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-lg text-slate-700">Account Balance</h3>
-                            <button onclick="fetchBalance()" class="text-blue-600 hover:text-blue-800"><i class="fas fa-sync-alt"></i> Refresh</button>
-                        </div>
-                        <div class="text-4xl font-bold text-slate-800 mb-2">৳ <span id="dash-balance">0.00</span></div>
-                        <p class="text-sm text-slate-500">Current available balance</p>
+        <!-- Dashboard -->
+        <section id="dashboard" class="hidden-section block">
+            <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+            <div class="bg-white p-6 rounded-lg shadow w-64">
+                <h3 class="text-gray-500 mb-2">Current Balance (BDT)</h3>
+                <div id="balance-display" class="text-4xl font-bold text-blue-600">--</div>
+                <button onclick="checkBalance()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Refresh Balance</button>
+            </div>
+        </section>
+
+        <!-- Send OTP -->
+        <section id="otp" class="hidden-section">
+            <h1 class="text-3xl font-bold mb-6">Send Voice OTP</h1>
+            <div class="bg-white p-6 rounded-lg shadow max-w-lg">
+                <form onsubmit="sendOTP(event)" class="space-y-4">
+                    <div>
+                        <label class="block font-medium mb-1">Sender ID</label>
+                        <select id="otp-sender" class="w-full border p-2 rounded dynamic-senders" required></select>
                     </div>
-
-                    <!-- Senders Wrapper -->
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
-                        <h3 class="font-bold text-lg text-slate-700 mb-4">Approved Senders</h3>
-                        <button onclick="fetchSenders()" class="w-full bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg transition">
-                            <i class="fas fa-list mr-2"></i> Load Sender IDs
-                        </button>
+                    <div>
+                        <label class="block font-medium mb-1">Voice</label>
+                        <select id="otp-voice" class="w-full border p-2 rounded dynamic-voices" required></select>
                     </div>
-                </div>
-                
-                <!-- Display Senders Result -->
-                <div id="senders-container" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hidden">
-                    <div class="p-4 bg-slate-50 border-b font-semibold">Sender Results</div>
-                    <div class="p-4 overflow-x-auto" id="senders-output"></div>
-                </div>
-            </section>
-
-            <!-- ================= VOICES ================= -->
-            <section id="tab-voices" class="page-section space-y-6">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Upload Form -->
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold text-lg text-slate-700 mb-4"><i class="fas fa-upload mr-2 text-blue-500"></i>Upload Voice</h3>
-                        <form onsubmit="handleVoiceUpload(event)" class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Voice Name</label>
-                                <input type="text" id="voiceName" required class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Audio File (mp3/wav)</label>
-                                <input type="file" id="voiceFile" accept=".mp3,.wav" required class="w-full p-2 border border-slate-300 rounded text-sm bg-slate-50">
-                            </div>
-                            <button type="submit" id="btn-voice-up" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg transition font-medium">Upload File</button>
-                        </form>
-                        <div id="voice-upload-res" class="mt-4 hidden"></div>
+                    <div>
+                        <label class="block font-medium mb-1">Phone Number</label>
+                        <input type="text" id="otp-phone" class="w-full border p-2 rounded" placeholder="019XXXXXXXX" required>
                     </div>
-
-                    <!-- List Voices -->
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center text-center h-full">
-                        <i class="fas fa-microphone-alt text-4xl text-slate-300 mb-4"></i>
-                        <h3 class="font-bold text-lg text-slate-700 mb-2">Manage Voices</h3>
-                        <p class="text-sm text-slate-500 mb-6">View all your uploaded audio files and their IDs required for broadcasting.</p>
-                        <button onclick="fetchVoices()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg transition mx-auto">
-                            Load All Voices
-                        </button>
+                    <div>
+                        <label class="block font-medium mb-1">OTP Code</label>
+                        <input type="text" id="otp-code" class="w-full border p-2 rounded" placeholder="1234" required>
                     </div>
-                </div>
-                <!-- Display Voices -->
-                <div id="voices-container" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hidden">
-                    <div class="p-4 bg-slate-50 border-b font-semibold">Voices Directory</div>
-                    <div class="p-4 overflow-x-auto" id="voices-output"></div>
-                </div>
-            </section>
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">Send OTP</button>
+                </form>
+            </div>
+        </section>
 
-            <!-- ================= BROADCASTS ================= -->
-            <section id="tab-broadcasts" class="page-section space-y-6">
-                <!-- Tabs for Broadcast Types -->
-                <div class="flex space-x-2 border-b border-slate-200 mb-4 pb-2 overflow-x-auto">
-                    <button onclick="showBcastForm('otp')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md font-medium text-sm whitespace-nowrap">Voice OTP</button>
-                    <button onclick="showBcastForm('bulk')" class="px-4 py-2 hover:bg-slate-100 text-slate-600 rounded-md font-medium text-sm whitespace-nowrap">Bulk Broadcast</button>
-                    <button onclick="showBcastForm('tts')" class="px-4 py-2 hover:bg-slate-100 text-slate-600 rounded-md font-medium text-sm whitespace-nowrap">TTS Broadcast</button>
-                    <button onclick="fetchBroadcasts()" class="px-4 py-2 bg-slate-800 text-white rounded-md font-medium text-sm ml-auto whitespace-nowrap"><i class="fas fa-history mr-1"></i> History</button>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Forms Container -->
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        
-                        <!-- OTP Form -->
-                        <form id="frm-bcast-otp" onsubmit="handleApiSubmit(event, '/broadcasts/otp', ['otp_num', 'otp_code'])" class="bcast-form space-y-4">
-                            <h3 class="font-bold text-lg mb-4">Send Voice OTP</h3>
-                            <input type="text" id="otp_num" placeholder="Phone Number" required class="w-full p-2 border rounded outline-none focus:border-blue-500">
-                            <input type="text" id="otp_code" placeholder="OTP Code (e.g. 1234)" required class="w-full p-2 border rounded outline-none focus:border-blue-500">
-                            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded">Send OTP</button>
-                        </form>
-
-                        <!-- Bulk Form -->
-                        <form id="frm-bcast-bulk" onsubmit="handleApiSubmit(event, '/broadcasts/multiple', ['bulk_vid', 'bulk_nums'])" class="bcast-form space-y-4 hidden">
-                            <h3 class="font-bold text-lg mb-4">Bulk Broadcast</h3>
-                            <input type="text" id="bulk_vid" placeholder="Voice ID" required class="w-full p-2 border rounded outline-none focus:border-blue-500">
-                            <textarea id="bulk_nums" placeholder="Numbers (comma separated)" required rows="3" class="w-full p-2 border rounded outline-none focus:border-blue-500"></textarea>
-                            <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded">Send Bulk</button>
-                        </form>
-
-                        <!-- TTS Form -->
-                        <form id="frm-bcast-tts" onsubmit="handleApiSubmit(event, '/broadcasts/tts', ['tts_num', 'tts_text'])" class="bcast-form space-y-4 hidden">
-                            <h3 class="font-bold text-lg mb-4">Text-to-Speech (TTS)</h3>
-                            <input type="text" id="tts_num" placeholder="Phone Number" required class="w-full p-2 border rounded outline-none focus:border-blue-500">
-                            <textarea id="tts_text" placeholder="Text to speak..." required rows="3" class="w-full p-2 border rounded outline-none focus:border-blue-500"></textarea>
-                            <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded">Send TTS</button>
-                        </form>
+        <!-- Bulk Broadcast -->
+        <section id="bulk" class="hidden-section">
+            <h1 class="text-3xl font-bold mb-6">Bulk Broadcast</h1>
+            <div class="bg-white p-6 rounded-lg shadow max-w-lg">
+                <form onsubmit="sendBulk(event)" class="space-y-4">
+                    <div>
+                        <label class="block font-medium mb-1">Sender ID</label>
+                        <select id="bulk-sender" class="w-full border p-2 rounded dynamic-senders" required></select>
                     </div>
-
-                    <!-- Output Container -->
-                    <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-700 overflow-hidden flex flex-col">
-                        <div class="p-3 bg-slate-950 border-b border-slate-700 text-slate-300 text-sm font-mono flex justify-between">
-                            <span>API Response</span>
-                            <i class="fas fa-terminal"></i>
-                        </div>
-                        <div class="p-4 flex-1 overflow-auto bg-slate-900">
-                            <pre id="bcast-output" class="text-green-400 text-xs font-mono break-all whitespace-pre-wrap">Awaiting action...</pre>
-                        </div>
+                    <div>
+                        <label class="block font-medium mb-1">Voice</label>
+                        <select id="bulk-voice" class="w-full border p-2 rounded dynamic-voices" required></select>
                     </div>
-                </div>
-
-                <!-- History Table Area -->
-                <div id="bcast-history-container" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hidden mt-6">
-                    <div class="p-4 bg-slate-50 border-b font-semibold">Recent Broadcasts</div>
-                    <div class="p-4 overflow-x-auto" id="bcast-history-output"></div>
-                </div>
-            </section>
-
-            <!-- ================= SURVEYS ================= -->
-            <section id="tab-surveys" class="page-section space-y-6">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Create Survey -->
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold text-lg text-slate-700 mb-4">Create Survey</h3>
-                        <form onsubmit="handleApiSubmit(event, '/surveys', ['surv_name', 'surv_vid'])" class="space-y-4">
-                            <input type="text" id="surv_name" placeholder="Survey Name" required class="w-full p-2 border rounded outline-none focus:border-blue-500">
-                            <input type="text" id="surv_vid" placeholder="Question Voice ID" required class="w-full p-2 border rounded outline-none focus:border-blue-500">
-                            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded transition">Create Survey</button>
-                        </form>
+                    <div>
+                        <label class="block font-medium mb-1">Phone Numbers (Comma separated)</label>
+                        <textarea id="bulk-phones" class="w-full border p-2 rounded h-32" placeholder="019XXXXXXX, 018XXXXXXX" required></textarea>
                     </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Send Broadcast</button>
+                </form>
+            </div>
+        </section>
 
-                    <!-- Get Survey Results -->
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold text-lg text-slate-700 mb-4">Get Survey Results</h3>
-                        <div class="flex space-x-2">
-                            <input type="text" id="fetch_surv_id" placeholder="Survey ID" class="flex-1 p-2 border rounded outline-none focus:border-blue-500">
-                            <button onclick="fetchSurveyResults()" class="bg-slate-800 text-white px-4 py-2 rounded hover:bg-slate-900 transition">Fetch</button>
-                        </div>
+        <!-- Upload Voice -->
+        <section id="upload" class="hidden-section">
+            <h1 class="text-3xl font-bold mb-6">Upload Voice</h1>
+            <div class="bg-white p-6 rounded-lg shadow max-w-lg">
+                <form onsubmit="uploadVoice(event)" class="space-y-4">
+                    <div>
+                        <label class="block font-medium mb-1">Voice Name</label>
+                        <input type="text" id="voice-name" class="w-full border p-2 rounded" required>
                     </div>
-                </div>
-                
-                <div id="survey-output-container" class="bg-slate-900 rounded-xl overflow-hidden hidden">
-                    <div class="p-3 bg-slate-950 text-slate-300 text-sm font-mono border-b border-slate-700">Survey API Output</div>
-                    <div class="p-4"><pre id="survey-output" class="text-green-400 text-xs font-mono"></pre></div>
-                </div>
-            </section>
+                    <div>
+                        <label class="block font-medium mb-1">Audio File (MP3/WAV)</label>
+                        <input type="file" id="voice-file" class="w-full border p-2 rounded" accept="audio/*" required>
+                    </div>
+                    <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">Upload</button>
+                </form>
+            </div>
+        </section>
 
-            <!-- ================= CALLS & AGENTS ================= -->
-            <section id="tab-calls" class="page-section space-y-6">
-                <div class="flex flex-col md:flex-row gap-4 mb-6">
-                    <button onclick="fetchApiData('/calls/incoming', 'calls-output-wrapper', 'calls-output')" class="flex-1 bg-white border border-slate-200 p-6 rounded-xl shadow-sm hover:shadow-md transition text-center group">
-                        <i class="fas fa-phone-incoming text-3xl text-emerald-500 mb-3 group-hover:scale-110 transition"></i>
-                        <h3 class="font-bold text-slate-700">Incoming Calls</h3>
-                        <p class="text-xs text-slate-500 mt-1">GET /calls/incoming</p>
-                    </button>
-                    <button onclick="fetchApiData('/agents', 'calls-output-wrapper', 'calls-output')" class="flex-1 bg-white border border-slate-200 p-6 rounded-xl shadow-sm hover:shadow-md transition text-center group">
-                        <i class="fas fa-user-tie text-3xl text-indigo-500 mb-3 group-hover:scale-110 transition"></i>
-                        <h3 class="font-bold text-slate-700">List Agents</h3>
-                        <p class="text-xs text-slate-500 mt-1">GET /agents</p>
-                    </button>
+        <!-- Settings -->
+        <section id="settings" class="hidden-section">
+            <h1 class="text-3xl font-bold mb-6">Settings</h1>
+            <div class="bg-white p-6 rounded-lg shadow max-w-lg">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block font-medium mb-1">API Token</label>
+                        <input type="password" id="api-token" class="w-full border p-2 rounded" placeholder="Paste your API token here">
+                    </div>
+                    <button onclick="saveToken()" class="w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900">Save Token</button>
                 </div>
-
-                <div id="calls-output-wrapper" class="bg-slate-900 rounded-xl overflow-hidden hidden">
-                    <div class="p-3 bg-slate-950 text-slate-300 text-sm font-mono border-b border-slate-700">Response</div>
-                    <div class="p-4 overflow-auto"><pre id="calls-output" class="text-pink-400 text-xs font-mono whitespace-pre-wrap"></pre></div>
-                </div>
-            </section>
-
-            <!-- ================= PAYMENTS ================= -->
-            <section id="tab-payments" class="page-section space-y-6">
-                <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 text-center">
-                    <i class="fas fa-file-invoice-dollar text-5xl text-slate-300 mb-4"></i>
-                    <h3 class="font-bold text-xl text-slate-700 mb-2">Payment History</h3>
-                    <p class="text-slate-500 mb-6 max-w-md mx-auto">Fetch transaction history or invoices via the payments endpoint.</p>
-                    <button onclick="fetchApiData('/payments', 'payment-wrapper', 'payment-output')" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2 rounded-lg transition inline-flex items-center">
-                        <i class="fas fa-cloud-download-alt mr-2"></i> Load Payments
-                    </button>
-                </div>
-                
-                <div id="payment-wrapper" class="bg-slate-900 rounded-xl overflow-hidden hidden">
-                    <div class="p-3 bg-slate-950 text-slate-300 text-sm font-mono border-b border-slate-700">API Response</div>
-                    <div class="p-4 overflow-auto max-h-96"><pre id="payment-output" class="text-yellow-400 text-xs font-mono"></pre></div>
-                </div>
-            </section>
-
-        </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Toast Container -->
-    <div id="toast-container" class="fixed bottom-4 right-4 md:top-20 md:bottom-auto md:right-8 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
     <script>
-        // API Configuration
-        const API_TOKEN = 'oat_NzMz.Yzd6M1RwSXRHZnR0dERpWkYzQ0dwR3JGZldrMmxtcTBveXVaMkJ1cTE4MzM4MzQ3NA';
-        const BASE_URL = 'https://api.awajdigital.com/api';
-        
-        // Setup initial state
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchBalance(); // Load balance on start
-        });
+        // Vercel Rewrite URL
+        const BASE_URL = '/awaj-api';
 
-        // --- Core UI Functions ---
-        function switchTab(tabId) {
-            // Hide all sections
-            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
-            // Remove active styling from nav
-            document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('bg-blue-600', 'text-white', 'active-nav');
-                el.classList.add('text-slate-300', 'hover:bg-slate-800');
-            });
-
-            // Activate new
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-            const navBtn = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
-            if(navBtn) {
-                navBtn.classList.remove('text-slate-300', 'hover:bg-slate-800');
-                navBtn.classList.add('bg-blue-600', 'text-white', 'active-nav');
-                // Update title based on nav text
-                document.getElementById('page-title').innerText = navBtn.innerText.trim();
-            }
-
-            // Close mobile menu if open
-            const sidebar = document.getElementById('sidebar');
-            if(!sidebar.classList.contains('-translate-x-full') && window.innerWidth < 768) {
-                sidebar.classList.add('-translate-x-full');
-            }
+        // Load Token
+        let API_TOKEN = localStorage.getItem('awaj_token') || '';
+        if(API_TOKEN) {
+            document.getElementById('api-token').value = API_TOKEN;
+            initData();
+        } else {
+            showSection('settings');
+            showToast('Please set your API token first', 'error');
         }
 
-        function toggleMobileMenu() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('-translate-x-full');
+        function saveToken() {
+            API_TOKEN = document.getElementById('api-token').value;
+            localStorage.setItem('awaj_token', API_TOKEN);
+            showToast('Token saved successfully!', 'success');
+            initData();
         }
 
+        // Navigation
+        function showSection(id) {
+            document.querySelectorAll('.hidden-section').forEach(sec => sec.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+            if(id === 'dashboard') checkBalance();
+        }
+
+        // Init App Data (Fetch Voices and Senders automatically)
+        async function initData() {
+            if(!API_TOKEN) return;
+            checkBalance();
+            await fetchVoices();
+            await fetchSenders();
+        }
+
+        // Generate 20-char unique ID automatically
+        function generateReqId() {
+            return Math.random().toString(36).substring(2, 12) + Math.random().toString(36).substring(2, 12);
+        }
+
+        // Custom Toast Notification
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            const bg = type === 'success' ? 'bg-slate-800' : 'bg-red-600';
-            const icon = type === 'success' ? 'fa-check text-emerald-400' : 'fa-exclamation-triangle text-white';
-            
-            toast.className = `toast ${bg} text-white px-4 py-3 rounded shadow-lg flex items-center border-l-4 ${type==='success'?'border-emerald-500':'border-red-800'} pointer-events-auto`;
-            toast.innerHTML = `<i class="fas ${icon} mr-3"></i> <span class="text-sm">${message}</span>`;
-            
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            toast.className = `${bgColor} text-white px-6 py-3 rounded shadow-lg opacity-0 transform translate-y-4 transition-all duration-300`;
+            toast.innerText = message;
             container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(20px)'; }, 3000);
-            setTimeout(() => toast.remove(), 3300);
-        }
-
-        function renderJsonToElement(elementId, data) {
-            const el = document.getElementById(elementId);
-            if(el) el.innerText = JSON.stringify(data, null, 2);
-        }
-
-        // --- Core API Fetch Wrapper ---
-        async function apiRequest(endpoint, method = 'GET', body = null, isFormData = false) {
-            const headers = { 'Authorization': `Bearer ${API_TOKEN}` };
-            if (!isFormData && body) headers['Content-Type'] = 'application/json';
             
-            const config = { method, headers };
-            if (body) {
-                if (isFormData) config.body = body;
-                else config.body = JSON.stringify(body);
+            setTimeout(() => { toast.classList.remove('opacity-0', 'translate-y-4'); }, 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Universal Fetch Wrapper
+        async function apiCall(endpoint, method = 'GET', body = null, isFormData = false) {
+            const headers = { 'Authorization': `Bearer ${API_TOKEN}` };
+            if (!isFormData) {
+                headers['Content-Type'] = 'application/json';
+                headers['Accept'] = 'application/json';
             }
+            const options = { method, headers };
+            if (body) options.body = isFormData ? body : JSON.stringify(body);
 
             try {
-                const res = await fetch(`${BASE_URL}${endpoint}`, config);
-                let data = {};
-                try { data = await res.json(); } catch(e) {} // Handle non-JSON safely
+                const res = await fetch(`${BASE_URL}${endpoint}`, options);
+                const data = await res.json().catch(() => ({}));
                 
-                return { ok: res.ok, status: res.status, data };
+                if (!res.ok) {
+                    const errMsg = data.message || data.error || 'Request failed';
+                    throw new Error(errMsg);
+                }
+                return data;
             } catch (err) {
-                return { ok: false, status: 500, data: { message: err.message } };
+                showToast(err.message, 'error');
+                throw err;
             }
         }
 
-        // --- Specific Features ---
-
-        // 1. Dashboard Methods
-        async function fetchBalance() {
-            const res = await apiRequest('/balance');
-            if (res.ok) {
-                const bal = res.data.balance || res.data.amount || (res.data.data && res.data.data.balance) || 0;
-                document.getElementById('dash-balance').innerText = parseFloat(bal).toFixed(2);
-            } else {
-                showToast('Failed to fetch balance', 'error');
-            }
+        // 1. Check Balance
+        async function checkBalance() {
+            try {
+                const data = await apiCall('/balance');
+                document.getElementById('balance-display').innerText = data.balance !== undefined ? data.balance : '0.00';
+            } catch (err) { document.getElementById('balance-display').innerText = 'Error'; }
         }
 
-        async function fetchSenders() {
-            const res = await apiRequest('/senders');
-            const container = document.getElementById('senders-container');
-            const output = document.getElementById('senders-output');
-            container.classList.remove('hidden');
-            
-            if (res.ok) {
-                // If the API returns a structured array, build a simple table
-                let items = res.data.data || res.data;
-                if (Array.isArray(items) && items.length > 0) {
-                    output.innerHTML = buildTableHTML(items);
-                } else {
-                    output.innerHTML = `<pre class="bg-slate-900 text-green-400 p-4 rounded text-xs font-mono">${JSON.stringify(res.data, null, 2)}</pre>`;
-                }
-                showToast('Senders loaded');
-            } else {
-                output.innerHTML = `<p class="text-red-500">Error: ${res.data.message || 'Unknown'}</p>`;
-                showToast('Failed to fetch senders', 'error');
-            }
-        }
-
-        // 2. Voice Methods
-        async function handleVoiceUpload(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btn-voice-up');
-            const fileInput = document.getElementById('voiceFile');
-            const nameInput = document.getElementById('voiceName');
-            
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            formData.append('name', nameInput.value);
-
-            btn.innerText = 'Uploading...';
-            btn.disabled = true;
-
-            const res = await apiRequest('/voices', 'POST', formData, true);
-            
-            btn.innerText = 'Upload File';
-            btn.disabled = false;
-
-            const resDiv = document.getElementById('voice-upload-res');
-            resDiv.classList.remove('hidden');
-            
-            if (res.ok) {
-                showToast('Voice uploaded successfully!');
-                e.target.reset();
-                resDiv.innerHTML = `<div class="p-3 bg-emerald-50 text-emerald-700 rounded border border-emerald-200 text-sm">Success! ID: ${res.data.id || res.data.data?.id || 'Check list'}</div>`;
-            } else {
-                showToast(res.data.message || 'Upload failed', 'error');
-                resDiv.innerHTML = `<div class="p-3 bg-red-50 text-red-700 rounded border border-red-200 text-sm">Error: ${res.data.message}</div>`;
-            }
-        }
-
+        // 2. Fetch Voices & Populate Dropdowns
         async function fetchVoices() {
-            const res = await apiRequest('/voices');
-            const container = document.getElementById('voices-container');
-            const output = document.getElementById('voices-output');
-            container.classList.remove('hidden');
-            
-            if (res.ok) {
-                let items = res.data.data || res.data;
-                if (Array.isArray(items) && items.length > 0) {
-                    // Custom table for voices to show ID, Name, Status if they exist
-                    output.innerHTML = buildTableHTML(items, ['id', 'name', 'status', 'created_at']);
-                } else {
-                    output.innerHTML = `<pre class="bg-slate-900 text-green-400 p-4 rounded text-xs font-mono">${JSON.stringify(res.data, null, 2)}</pre>`;
-                }
-                showToast('Voices loaded');
-            } else {
-                output.innerHTML = `<p class="text-red-500">Failed to load</p>`;
-                showToast('API Error', 'error');
-            }
+            try {
+                const voices = await apiCall('/voices');
+                const options = '<option value="">Select a Voice</option>' + 
+                    voices.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
+                document.querySelectorAll('.dynamic-voices').forEach(select => select.innerHTML = options);
+            } catch (err) {}
         }
 
-        // 3. Broadcast Methods
-        function showBcastForm(type) {
-            document.querySelectorAll('.bcast-form').forEach(f => f.classList.add('hidden'));
-            document.getElementById(`frm-bcast-${type}`).classList.remove('hidden');
-            
-            // Reset tab button styles
-            const btns = document.querySelectorAll('#tab-broadcasts button');
-            btns.forEach((b, i) => {
-                if(i < 3) {
-                    b.className = 'px-4 py-2 hover:bg-slate-100 text-slate-600 rounded-md font-medium text-sm whitespace-nowrap';
-                }
-            });
-            // highlight active tab button
-            event.target.className = 'px-4 py-2 bg-blue-100 text-blue-700 rounded-md font-medium text-sm whitespace-nowrap';
+        // 3. Fetch Senders & Populate Dropdowns
+        async function fetchSenders() {
+            try {
+                const senders = await apiCall('/senders');
+                const options = '<option value="">Select a Sender</option>' + 
+                    senders.map(s => `<option value="${s.number || s}">${s.number || s}</option>`).join('');
+                document.querySelectorAll('.dynamic-senders').forEach(select => select.innerHTML = options);
+            } catch (err) {}
         }
 
-        async function handleApiSubmit(e, endpoint, fieldIds) {
+        // 4. Send OTP
+        async function sendOTP(e) {
             e.preventDefault();
-            const btn = e.target.querySelector('button');
-            const originalText = btn.innerText;
-            btn.innerText = 'Processing...';
-            btn.disabled = true;
-
-            // Build body dynamically based on form inputs
-            let body = {};
-            if(endpoint === '/broadcasts/otp') {
-                body.number = document.getElementById(fieldIds[0]).value;
-                body.otp = document.getElementById(fieldIds[1]).value;
-            } else if (endpoint === '/broadcasts/multiple') {
-                body.voice_id = document.getElementById(fieldIds[0]).value;
-                // split by comma, trim spaces
-                body.numbers = document.getElementById(fieldIds[1]).value.split(',').map(n => n.trim());
-            } else if (endpoint === '/broadcasts/tts') {
-                body.number = document.getElementById(fieldIds[0]).value;
-                body.text = document.getElementById(fieldIds[1]).value;
-            } else if (endpoint === '/surveys') {
-                body.name = document.getElementById(fieldIds[0]).value;
-                body.voice_id = document.getElementById(fieldIds[1]).value;
-            }
-
-            const res = await apiRequest(endpoint, 'POST', body);
-            
-            btn.innerText = originalText;
-            btn.disabled = false;
-
-            if (res.ok) {
-                showToast('Action successful!');
+            const payload = {
+                request_id: generateReqId(),
+                sender: document.getElementById('otp-sender').value,
+                voice: document.getElementById('otp-voice').value,
+                phone_number: document.getElementById('otp-phone').value,
+                otp_code: document.getElementById('otp-code').value
+            };
+            try {
+                await apiCall('/broadcasts/otp', 'POST', payload);
+                showToast('OTP request sent successfully!');
                 e.target.reset();
-            } else {
-                showToast('Action failed', 'error');
-            }
-            
-            // Show response in the terminal block
-            renderJsonToElement('bcast-output', res.data);
-            if(endpoint === '/surveys') {
-                document.getElementById('survey-output-container').classList.remove('hidden');
-                renderJsonToElement('survey-output', res.data);
-            }
+            } catch (err) {}
         }
 
-        async function fetchBroadcasts() {
-            const res = await apiRequest('/broadcasts');
-            const container = document.getElementById('bcast-history-container');
-            const output = document.getElementById('bcast-history-output');
-            container.classList.remove('hidden');
+        // 5. Send Bulk Broadcast
+        async function sendBulk(e) {
+            e.preventDefault();
+            const phoneStr = document.getElementById('bulk-phones').value;
+            const phoneArr = phoneStr.split(',').map(num => num.trim()).filter(num => num);
             
-            if (res.ok) {
-                let items = res.data.data || res.data;
-                if (Array.isArray(items) && items.length > 0) {
-                    output.innerHTML = buildTableHTML(items);
-                } else {
-                    output.innerHTML = `<pre class="bg-slate-900 text-green-400 p-4 rounded text-xs font-mono">${JSON.stringify(res.data, null, 2)}</pre>`;
-                }
-                showToast('History loaded');
-            } else {
-                output.innerHTML = `<p class="text-red-500">Failed to load</p>`;
-            }
+            const payload = {
+                request_id: generateReqId(),
+                sender: document.getElementById('bulk-sender').value,
+                voice: document.getElementById('bulk-voice').value,
+                phone_numbers: phoneArr
+            };
+            try {
+                await apiCall('/broadcasts', 'POST', payload);
+                showToast(`Broadcast sent to ${phoneArr.length} numbers!`);
+                e.target.reset();
+            } catch (err) {}
         }
 
-        // 4. Surveys Methods (Results)
-        async function fetchSurveyResults() {
-            const id = document.getElementById('fetch_surv_id').value.trim();
-            if(!id) return showToast('Enter Survey ID', 'error');
-            
-            const wrapper = document.getElementById('survey-output-container');
-            wrapper.classList.remove('hidden');
-            document.getElementById('survey-output').innerText = 'Fetching...';
-            
-            const res = await apiRequest(`/surveys/${id}`);
-            renderJsonToElement('survey-output', res.data);
-            
-            if(res.ok) showToast('Survey results loaded');
-            else showToast('Failed to load survey', 'error');
+        // 6. Upload Voice
+        async function uploadVoice(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('name', document.getElementById('voice-name').value);
+            formData.append('audio', document.getElementById('voice-file').files[0]);
+
+            try {
+                await apiCall('/voices/upload', 'POST', formData, true);
+                showToast('Voice uploaded! Waiting for approval.');
+                e.target.reset();
+                setTimeout(fetchVoices, 2000);
+            } catch (err) {}
         }
 
-        // Generic Fetch for Calls, Agents, Payments
-        async function fetchApiData(endpoint, wrapperId, outputId) {
-            const wrapper = document.getElementById(wrapperId);
-            wrapper.classList.remove('hidden');
-            document.getElementById(outputId).innerText = 'Loading...';
-            
-            const res = await apiRequest(endpoint);
-            renderJsonToElement(outputId, res.data);
-            
-            if(res.ok) showToast(`${endpoint} data loaded`);
-            else showToast(`Error loading ${endpoint}`, 'error');
-        }
-
-        // Utility: Build HTML Table from JSON Array
-        function buildTableHTML(dataArray, preferredKeys = null) {
-            if(!dataArray || dataArray.length === 0) return '<p class="text-slate-500">No data found.</p>';
-            
-            // Determine columns based on preferred keys or first object keys
-            let cols = preferredKeys || Object.keys(dataArray[0]).filter(k => typeof dataArray[0][k] !== 'object');
-            if(cols.length > 6) cols = cols.slice(0, 6); // Max 6 columns for neatness
-            
-            let html = `<table class="w-full text-sm text-left text-slate-500 border-collapse">`;
-            html += `<thead class="text-xs text-slate-700 uppercase bg-slate-100"><tr>`;
-            cols.forEach(col => {
-                html += `<th class="px-4 py-3 border-b">${col.replace('_', ' ')}</th>`;
-            });
-            html += `</tr></thead><tbody>`;
-            
-            dataArray.forEach((row, index) => {
-                let bgClass = index % 2 === 0 ? 'bg-white' : 'bg-slate-50';
-                html += `<tr class="${bgClass} border-b hover:bg-slate-100">`;
-                cols.forEach(col => {
-                    let val = row[col];
-                    if(val === null || val === undefined) val = '-';
-                    // truncate long strings
-                    if(typeof val === 'string' && val.length > 40) val = val.substring(0, 40) + '...';
-                    html += `<td class="px-4 py-3">${val}</td>`;
-                });
-                html += `</tr>`;
-            });
-            html += `</tbody></table>`;
-            return html;
-        }
+        // Start App
+        if(API_TOKEN) showSection('dashboard');
     </script>
 </body>
 </html>
