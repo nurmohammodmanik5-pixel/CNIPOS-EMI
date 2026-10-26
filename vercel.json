@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/awaj-api/:match*",
+      "destination": "https://api.awajdigital.com/api/:match*"
+    }
+  ]
+}
