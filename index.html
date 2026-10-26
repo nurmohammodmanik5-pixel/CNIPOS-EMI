@@ -13,6 +13,9 @@
 </head>
 <body class="bg-gray-100 flex h-screen font-sans">
 
+    <!-- Suggestions list if API ever returns anything -->
+    <datalist id="sender-suggestions"></datalist>
+
     <!-- Sidebar -->
     <aside class="w-64 bg-gray-900 text-white flex flex-col h-full overflow-y-auto">
         <div class="p-6 text-2xl font-bold border-b border-gray-800">AwajDigital</div>
@@ -52,8 +55,8 @@
             <div class="bg-white p-6 rounded-lg shadow max-w-lg">
                 <form onsubmit="sendOTP(event)" class="space-y-4">
                     <div>
-                        <label class="block font-medium mb-1">Sender ID</label>
-                        <select id="otp-sender" class="w-full border p-2 rounded dynamic-senders" required></select>
+                        <label class="block font-medium mb-1">Sender ID (Write Manually)</label>
+                        <input type="text" id="otp-sender" list="sender-suggestions" oninput="syncSender(this.value)" class="w-full border p-2 rounded sender-input" placeholder="e.g., 8809612345678" required>
                     </div>
                     <div>
                         <label class="block font-medium mb-1">Voice</label>
@@ -78,8 +81,8 @@
             <div class="bg-white p-6 rounded-lg shadow max-w-lg">
                 <form onsubmit="sendBulk(event)" class="space-y-4">
                     <div>
-                        <label class="block font-medium mb-1">Sender ID</label>
-                        <select id="bulk-sender" class="w-full border p-2 rounded dynamic-senders" required></select>
+                        <label class="block font-medium mb-1">Sender ID (Write Manually)</label>
+                        <input type="text" id="bulk-sender" list="sender-suggestions" oninput="syncSender(this.value)" class="w-full border p-2 rounded sender-input" placeholder="e.g., 8809612345678" required>
                     </div>
                     <div>
                         <label class="block font-medium mb-1">Voice</label>
@@ -101,8 +104,8 @@
                 <p class="text-sm text-gray-500 mb-4">Convert Bangla/English text directly to voice calls.</p>
                 <form onsubmit="sendTTS(event)" class="space-y-4">
                     <div>
-                        <label class="block font-medium mb-1">Sender ID</label>
-                        <select id="tts-sender" class="w-full border p-2 rounded dynamic-senders" required></select>
+                        <label class="block font-medium mb-1">Sender ID (Write Manually)</label>
+                        <input type="text" id="tts-sender" list="sender-suggestions" oninput="syncSender(this.value)" class="w-full border p-2 rounded sender-input" placeholder="e.g., 8809612345678" required>
                     </div>
                     <div>
                         <label class="block font-medium mb-1">Phone Numbers (Comma separated)</label>
@@ -139,8 +142,8 @@
             <div class="bg-white p-6 rounded-lg shadow max-w-lg">
                 <form onsubmit="createSurvey(event)" class="space-y-4">
                     <div>
-                        <label class="block font-medium mb-1">Sender ID</label>
-                        <select id="survey-sender" class="w-full border p-2 rounded dynamic-senders" required></select>
+                        <label class="block font-medium mb-1">Sender ID (Write Manually)</label>
+                        <input type="text" id="survey-sender" list="sender-suggestions" oninput="syncSender(this.value)" class="w-full border p-2 rounded sender-input" placeholder="e.g., 8809612345678" required>
                     </div>
                     <div>
                         <label class="block font-medium mb-1">Template Name</label>
@@ -203,20 +206,37 @@
                     <div>
                         <label class="block font-medium mb-1">AwajDigital API Token</label>
                         <input type="password" id="api-token" class="w-full border p-2 rounded bg-gray-50" placeholder="Paste your API token here">
-                        <p class="text-xs text-gray-500 mt-1">Stored securely in your browser's LocalStorage.</p>
                     </div>
-                    <button onclick="saveToken()" class="w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900">Save Token & Reload Data</button>
+                    <div>
+                        <label class="block font-medium mb-1">Default Sender ID (Optional)</label>
+                        <input type="text" id="default-sender" oninput="syncSender(this.value)" class="w-full border p-2 rounded bg-gray-50 sender-input" placeholder="e.g., 8809612345678">
+                        <p class="text-xs text-gray-500 mt-1">Type your sender ID here once, and it will auto-fill everywhere.</p>
+                    </div>
+                    <button onclick="saveToken()" class="w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900">Save Settings & Reload</button>
                 </div>
             </div>
         </section>
     </main>
 
     <script>
-        // Vercel Proxy URL 
         const BASE_URL = '/awaj-api';
 
-        // Load Token
         let API_TOKEN = localStorage.getItem('awaj_token') || '';
+        let SAVED_SENDER = localStorage.getItem('awaj_sender') || '';
+
+        // Auto-fill saved sender ID everywhere
+        function syncSender(val) {
+            SAVED_SENDER = val.trim();
+            localStorage.setItem('awaj_sender', SAVED_SENDER);
+            document.querySelectorAll('.sender-input').forEach(input => {
+                if (input.value !== val) input.value = SAVED_SENDER;
+            });
+        }
+
+        if (SAVED_SENDER) {
+            syncSender(SAVED_SENDER);
+        }
+
         if(API_TOKEN) {
             document.getElementById('api-token').value = API_TOKEN;
             initData();
@@ -228,7 +248,7 @@
         function saveToken() {
             API_TOKEN = document.getElementById('api-token').value.trim();
             localStorage.setItem('awaj_token', API_TOKEN);
-            showToast('Token saved successfully!', 'success');
+            showToast('Settings saved successfully!', 'success');
             initData();
         }
 
@@ -236,6 +256,8 @@
             document.querySelectorAll('.hidden-section').forEach(sec => sec.style.display = 'none');
             document.getElementById(id).style.display = 'block';
             if(id === 'dashboard') checkBalance();
+            // Ensure sender stays filled even after form resets
+            if(SAVED_SENDER) syncSender(SAVED_SENDER);
         }
 
         async function initData() {
@@ -322,59 +344,31 @@
         async function fetchSenders() {
             try {
                 const res = await apiCall('/senders');
-                console.log("Senders Response:", res); // Debug log
+                let senderArray = Array.isArray(res) ? res : (res.data || res.senders || []);
                 
-                let senderArray = [];
-                if (Array.isArray(res)) {
-                    senderArray = res;
-                } else if (res && typeof res === 'object') {
-                    const possibleArrays = Object.values(res).filter(val => Array.isArray(val));
-                    if (possibleArrays.length > 0) {
-                        senderArray = possibleArrays[0];
-                    } else if (res.data && Array.isArray(res.data)) {
-                        senderArray = res.data;
-                    }
-                }
-                
-                let options = '<option value="">Select a Sender ID</option>';
-                
-                if (senderArray.length === 0) {
-                    options = '<option value="">No Senders Found</option>';
-                } else {
-                    senderArray.forEach(s => {
-                        let number = "";
-                        if (typeof s === 'string' || typeof s === 'number') {
-                            number = s;
-                        } else if (typeof s === 'object' && s !== null) {
-                            number = s.number || s.sender || s.sender_id || s.phone_number || s.id;
-                        }
-                        if (number) {
-                            options += `<option value="${number}">${number}</option>`;
-                        }
-                    });
-                }
-                document.querySelectorAll('.dynamic-senders').forEach(select => select.innerHTML = options);
-            } catch (err) { 
-                console.error("Failed to fetch senders", err); 
-                document.querySelectorAll('.dynamic-senders').forEach(select => {
-                    select.innerHTML = '<option value="">Error loading senders</option>';
+                let options = '';
+                senderArray.forEach(s => {
+                    let number = typeof s === 'string' ? s : (s.number || s.sender || s.sender_id || s.phone_number || '');
+                    if (number) options += `<option value="${number}">`;
                 });
-            }
+                document.getElementById('sender-suggestions').innerHTML = options;
+            } catch (err) {}
         }
 
         async function sendOTP(e) {
             e.preventDefault();
             const payload = {
                 request_id: generateReqId(),
-                sender: document.getElementById('otp-sender').value,
+                sender: document.getElementById('otp-sender').value.trim(),
                 voice: document.getElementById('otp-voice').value,
-                phone_number: document.getElementById('otp-phone').value,
-                otp_code: document.getElementById('otp-code').value
+                phone_number: document.getElementById('otp-phone').value.trim(),
+                otp_code: document.getElementById('otp-code').value.trim()
             };
             try {
                 await apiCall('/broadcasts/otp', 'POST', payload);
                 showToast('OTP request sent successfully!');
-                e.target.reset();
+                document.getElementById('otp-phone').value = '';
+                document.getElementById('otp-code').value = '';
             } catch (err) {}
         }
 
@@ -382,14 +376,14 @@
             e.preventDefault();
             const payload = {
                 request_id: generateReqId(),
-                sender: document.getElementById('bulk-sender').value,
+                sender: document.getElementById('bulk-sender').value.trim(),
                 voice: document.getElementById('bulk-voice').value,
                 phone_numbers: parsePhones(document.getElementById('bulk-phones').value)
             };
             try {
                 await apiCall('/broadcasts', 'POST', payload);
                 showToast('Bulk Broadcast initialized!');
-                e.target.reset();
+                document.getElementById('bulk-phones').value = '';
             } catch (err) {}
         }
 
@@ -397,7 +391,7 @@
             e.preventDefault();
             const payload = {
                 request_id: generateReqId(),
-                sender: document.getElementById('tts-sender').value,
+                sender: document.getElementById('tts-sender').value.trim(),
                 phone_numbers: parsePhones(document.getElementById('tts-phones').value),
                 texts: [document.getElementById('tts-text').value],
                 voice: document.getElementById('tts-voice-type').value,
@@ -406,7 +400,8 @@
             try {
                 await apiCall('/broadcasts/direct-tts', 'POST', payload);
                 showToast('TTS Broadcast request sent successfully!');
-                e.target.reset();
+                document.getElementById('tts-phones').value = '';
+                document.getElementById('tts-text').value = '';
             } catch (err) {}
         }
 
@@ -414,14 +409,14 @@
             e.preventDefault();
             const payload = {
                 request_id: generateReqId(),
-                template_name: document.getElementById('survey-template').value,
-                sender: document.getElementById('survey-sender').value,
+                template_name: document.getElementById('survey-template').value.trim(),
+                sender: document.getElementById('survey-sender').value.trim(),
                 phone_numbers: parsePhones(document.getElementById('survey-phones').value)
             };
             try {
                 await apiCall('/surveys', 'POST', payload);
                 showToast('Survey campaign created successfully!');
-                e.target.reset();
+                document.getElementById('survey-phones').value = '';
             } catch (err) {}
         }
 
@@ -429,7 +424,7 @@
             e.preventDefault();
             const payload = {
                 request_id: generateReqId(),
-                name: document.getElementById('camp-name').value,
+                name: document.getElementById('camp-name').value.trim(),
                 group_id: parseInt(document.getElementById('camp-group').value),
                 phone_numbers: parsePhones(document.getElementById('camp-phones').value)
             };
@@ -443,7 +438,7 @@
         async function uploadVoice(e) {
             e.preventDefault();
             const formData = new FormData();
-            formData.append('name', document.getElementById('voice-name').value);
+            formData.append('name', document.getElementById('voice-name').value.trim());
             formData.append('audio', document.getElementById('voice-file').files[0]);
 
             try {
