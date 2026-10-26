@@ -247,7 +247,6 @@
         }
 
         function generateReqId() {
-            // Generates a 24 character random ID
             return 'req_' + Math.random().toString(36).substring(2, 12) + Math.random().toString(36).substring(2, 14);
         }
 
@@ -282,7 +281,7 @@
             try {
                 const res = await fetch(`${BASE_URL}${endpoint}`, options);
                 let data = {};
-                try { data = await res.json(); } catch(e) {} // Handle empty responses
+                try { data = await res.json(); } catch(e) {}
                 
                 if (!res.ok) {
                     const errMsg = data.message || data.error || (data.errors ? JSON.stringify(data.errors) : `HTTP Error ${res.status}`);
@@ -301,7 +300,6 @@
         async function checkBalance() {
             try {
                 const data = await apiCall('/balance');
-                // Extract balance based on possible JSON structures
                 const bal = data.balance !== undefined ? data.balance : (data.data?.balance || '0.00');
                 document.getElementById('balance-display').innerText = '৳ ' + parseFloat(bal).toFixed(2);
             } catch (err) { document.getElementById('balance-display').innerText = 'Error'; }
@@ -310,7 +308,6 @@
         async function fetchVoices() {
             try {
                 const res = await apiCall('/voices');
-                // Handle different JSON wrappers (array vs object)
                 const voiceArray = Array.isArray(res) ? res : (res.data || res.voices || []);
                 
                 let options = '<option value="">Select an Approved Voice</option>';
@@ -325,16 +322,44 @@
         async function fetchSenders() {
             try {
                 const res = await apiCall('/senders');
-                // Handle different JSON wrappers
-                const senderArray = Array.isArray(res) ? res : (res.data || res.senders || []);
+                console.log("Senders Response:", res); // Debug log
+                
+                let senderArray = [];
+                if (Array.isArray(res)) {
+                    senderArray = res;
+                } else if (res && typeof res === 'object') {
+                    const possibleArrays = Object.values(res).filter(val => Array.isArray(val));
+                    if (possibleArrays.length > 0) {
+                        senderArray = possibleArrays[0];
+                    } else if (res.data && Array.isArray(res.data)) {
+                        senderArray = res.data;
+                    }
+                }
                 
                 let options = '<option value="">Select a Sender ID</option>';
-                senderArray.forEach(s => {
-                    const number = typeof s === 'string' ? s : s.number;
-                    options += `<option value="${number}">${number}</option>`;
-                });
+                
+                if (senderArray.length === 0) {
+                    options = '<option value="">No Senders Found</option>';
+                } else {
+                    senderArray.forEach(s => {
+                        let number = "";
+                        if (typeof s === 'string' || typeof s === 'number') {
+                            number = s;
+                        } else if (typeof s === 'object' && s !== null) {
+                            number = s.number || s.sender || s.sender_id || s.phone_number || s.id;
+                        }
+                        if (number) {
+                            options += `<option value="${number}">${number}</option>`;
+                        }
+                    });
+                }
                 document.querySelectorAll('.dynamic-senders').forEach(select => select.innerHTML = options);
-            } catch (err) { console.error("Failed to fetch senders"); }
+            } catch (err) { 
+                console.error("Failed to fetch senders", err); 
+                document.querySelectorAll('.dynamic-senders').forEach(select => {
+                    select.innerHTML = '<option value="">Error loading senders</option>';
+                });
+            }
         }
 
         async function sendOTP(e) {
